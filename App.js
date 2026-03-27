@@ -1,8 +1,9 @@
 import { StatusBar } from 'expo-status-bar';
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { AppProvider, useApp } from './src/context/AppContext';
 
 import SplashScreen from './src/screens/auth/SplashScreen';
@@ -25,8 +26,6 @@ import RainfallForecastScreen from './src/screens/main/RainfallForecastScreen';
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
 
-const TAB_ICONS = { Home: '🏠', Map: '🗺️', SOS: '🆘', Report: '📋', Alerts: '🔔' };
-
 function MainTabs() {
   const { unreadCount } = useApp();
   return (
@@ -36,44 +35,40 @@ function MainTabs() {
         tabBarStyle: {
           backgroundColor: '#1A1A2E',
           borderTopColor: 'rgba(255,255,255,0.08)',
-          height: 64, paddingBottom: 8,
+          height: 64, paddingBottom: 8, paddingTop: 4,
         },
         tabBarActiveTintColor: '#00C9A7',
-        tabBarInactiveTintColor: 'rgba(255,255,255,0.35)',
+        tabBarInactiveTintColor: 'rgba(255,255,255,0.4)',
         tabBarLabelStyle: { fontSize: 10, fontWeight: '600' },
-        tabBarIcon: ({ focused }) => (
-          <View style={{
-            alignItems: 'center', justifyContent: 'center',
-            backgroundColor: focused ? 'rgba(0,201,167,0.15)' : 'transparent',
-            borderRadius: 10, width: 40, height: 32,
-          }}>
-            <Text style={{ fontSize: 20 }}>{TAB_ICONS[route.name]}</Text>
-            {route.name === 'Alerts' && unreadCount > 0 && (
-              <View style={{
-                position: 'absolute', top: 0, right: 0,
-                backgroundColor: '#FF3B5C', borderRadius: 6,
-                width: 12, height: 12, alignItems: 'center', justifyContent: 'center',
-              }}>
-                <Text style={{ color: '#FFF', fontSize: 8, fontWeight: '800' }}>{unreadCount}</Text>
-              </View>
-            )}
-          </View>
-        ),
+        tabBarIcon: ({ color, focused, size }) => {
+          const icons = { Home: 'home', Map: 'map-marker-radius', Report: 'clipboard-text', Alerts: 'bell' };
+          return (
+            <View style={{ alignItems: 'center', justifyContent: 'center',
+              backgroundColor: focused ? 'rgba(0,201,167,0.15)' : 'transparent',
+              borderRadius: 10, width: 40, height: 30, position: 'relative' }}>
+              <MaterialCommunityIcons name={icons[route.name]} size={22} color={color} />
+              {route.name === 'Alerts' && unreadCount > 0 && (
+                <View style={{ position: 'absolute', top: 0, right: 2,
+                  backgroundColor: '#FF3B5C', borderRadius: 5,
+                  width: 10, height: 10 }} />
+              )}
+            </View>
+          );
+        },
       })}
     >
       <Tab.Screen name="Home" component={HomeScreen} />
       <Tab.Screen name="Map" component={MapScreen} />
       <Tab.Screen name="SOS" component={SOSScreen}
         options={{
-          tabBarIcon: ({ focused }) => (
-            <View style={{
-              width: 52, height: 52, borderRadius: 26,
+          tabBarLabel: 'SOS',
+          tabBarIcon: () => (
+            <View style={{ width: 52, height: 52, borderRadius: 26,
               backgroundColor: '#FF3B5C', alignItems: 'center', justifyContent: 'center',
-              marginBottom: 16,
+              marginBottom: 18, elevation: 8,
               shadowColor: '#FF3B5C', shadowOffset: { width: 0, height: 4 },
-              shadowOpacity: 0.5, shadowRadius: 8, elevation: 8,
-            }}>
-              <Text style={{ fontSize: 24 }}>🆘</Text>
+              shadowOpacity: 0.5, shadowRadius: 8 }}>
+              <MaterialCommunityIcons name="alarm-light" size={28} color="#FFF" />
             </View>
           ),
         }}
