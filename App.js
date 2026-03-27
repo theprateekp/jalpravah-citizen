@@ -1,3 +1,4 @@
+import 'react-native-gesture-handler';
 import { StatusBar } from 'expo-status-bar';
 import { View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -11,7 +12,6 @@ import SplashScreen from './src/screens/auth/SplashScreen';
 import OnboardingScreen from './src/screens/auth/OnboardingScreen';
 import LoginScreen from './src/screens/auth/LoginScreen';
 import RegisterScreen from './src/screens/auth/RegisterScreen';
-
 import HomeScreen from './src/screens/main/HomeScreen';
 import MapScreen from './src/screens/main/MapScreen';
 import SOSScreen from './src/screens/main/SOSScreen';
@@ -41,17 +41,21 @@ function MainTabs() {
         tabBarActiveTintColor: '#00C9A7',
         tabBarInactiveTintColor: 'rgba(255,255,255,0.4)',
         tabBarLabelStyle: { fontSize: 10, fontWeight: '600' },
-        tabBarIcon: ({ color, focused, size }) => {
+        tabBarIcon: ({ color, focused }) => {
           const icons = { Home: 'home', Map: 'map-marker-radius', Report: 'clipboard-text', Alerts: 'bell' };
+          if (route.name === 'SOS') return null;
           return (
-            <View style={{ alignItems: 'center', justifyContent: 'center',
+            <View style={{
+              alignItems: 'center', justifyContent: 'center',
               backgroundColor: focused ? 'rgba(0,201,167,0.15)' : 'transparent',
-              borderRadius: 10, width: 40, height: 30, position: 'relative' }}>
+              borderRadius: 10, width: 40, height: 30,
+            }}>
               <MaterialCommunityIcons name={icons[route.name]} size={22} color={color} />
               {route.name === 'Alerts' && unreadCount > 0 && (
-                <View style={{ position: 'absolute', top: 0, right: 2,
-                  backgroundColor: '#FF3B5C', borderRadius: 5,
-                  width: 10, height: 10 }} />
+                <View style={{
+                  position: 'absolute', top: 0, right: 2,
+                  backgroundColor: '#FF3B5C', borderRadius: 5, width: 10, height: 10,
+                }} />
               )}
             </View>
           );
@@ -64,11 +68,13 @@ function MainTabs() {
         options={{
           tabBarLabel: 'SOS',
           tabBarIcon: () => (
-            <View style={{ width: 52, height: 52, borderRadius: 26,
+            <View style={{
+              width: 52, height: 52, borderRadius: 26,
               backgroundColor: '#FF3B5C', alignItems: 'center', justifyContent: 'center',
               marginBottom: 18, elevation: 8,
               shadowColor: '#FF3B5C', shadowOffset: { width: 0, height: 4 },
-              shadowOpacity: 0.5, shadowRadius: 8 }}>
+              shadowOpacity: 0.5, shadowRadius: 8,
+            }}>
               <MaterialCommunityIcons name="alarm-light" size={28} color="#FFF" />
             </View>
           ),
@@ -80,13 +86,22 @@ function MainTabs() {
   );
 }
 
-function RootNavigator() {
+// Auth stack — shown when user is NOT logged in
+function AuthStack() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }} initialRouteName="Splash">
       <Stack.Screen name="Splash" component={SplashScreen} />
       <Stack.Screen name="Onboarding" component={OnboardingScreen} />
       <Stack.Screen name="Login" component={LoginScreen} />
       <Stack.Screen name="Register" component={RegisterScreen} />
+    </Stack.Navigator>
+  );
+}
+
+// App stack — shown when user IS logged in
+function AppStack() {
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false }} initialRouteName="MainTabs">
       <Stack.Screen name="MainTabs" component={MainTabs} />
       <Stack.Screen name="TriageCard" component={TriageCardScreen} />
       <Stack.Screen name="VoiceAgent" component={VoiceAgentScreen} />
@@ -96,6 +111,12 @@ function RootNavigator() {
       <Stack.Screen name="RainfallForecast" component={RainfallForecastScreen} />
     </Stack.Navigator>
   );
+}
+
+// Root navigator switches between auth and app based on login state
+function RootNavigator() {
+  const { user } = useApp();
+  return user ? <AppStack /> : <AuthStack />;
 }
 
 export default function App() {

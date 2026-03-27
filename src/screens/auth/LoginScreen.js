@@ -19,11 +19,10 @@ export default function LoginScreen({ navigation }) {
       return;
     }
     setLoading(true);
-    // Simulate auth
     setTimeout(() => {
       setLoading(false);
+      // login() updates user state → RootNavigator auto-switches to AppStack
       login({ name: 'Citizen User', phone, ward: 'K/E', role: 'citizen' });
-      navigation.replace('MainTabs');
     }, 1000);
   };
 

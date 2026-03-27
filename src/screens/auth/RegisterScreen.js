@@ -24,8 +24,8 @@ export default function RegisterScreen({ navigation }) {
     setLoading(true);
     setTimeout(() => {
       setLoading(false);
+      // login() updates user state → RootNavigator auto-switches to AppStack
       login({ name, phone, ward, role: 'citizen' });
-      navigation.replace('MainTabs');
     }, 1000);
   };
 
