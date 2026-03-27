@@ -1,5 +1,6 @@
 import { StatusBar } from 'expo-status-bar';
 import { View } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -99,11 +100,13 @@ function RootNavigator() {
 
 export default function App() {
   return (
-    <AppProvider>
-      <NavigationContainer>
-        <StatusBar style="light" />
-        <RootNavigator />
-      </NavigationContainer>
-    </AppProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <AppProvider>
+        <NavigationContainer>
+          <StatusBar style="light" />
+          <RootNavigator />
+        </NavigationContainer>
+      </AppProvider>
+    </GestureHandlerRootView>
   );
 }
