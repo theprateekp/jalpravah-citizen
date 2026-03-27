@@ -1,0 +1,136 @@
+{
+  "name": "JalPravah — Citizen App Workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "sos-alert",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "sos-webhook",
+      "name": "SOS Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 300],
+      "webhookId": "jalpravah-sos"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "drain-report",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "report-webhook",
+      "name": "Drain Report Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 520],
+      "webhookId": "jalpravah-report"
+    },
+    {
+      "parameters": {
+        "httpMethod": "GET",
+        "path": "weather",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "weather-webhook",
+      "name": "Weather Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 740],
+      "webhookId": "jalpravah-weather"
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $input.first().json.body;\nconst sosId = 'SOS-' + Date.now();\nconst timestamp = new Date().toISOString();\n\nreturn [{\n  json: {\n    sosId,\n    timestamp,\n    name: body.name || 'Unknown',\n    phone: body.phone || '',\n    ward: body.ward || '',\n    emergencyType: body.emergencyType || 'trapped',\n    severity: body.severity || 'HIGH',\n    bloodType: body.bloodType || '',\n    medicalFlags: body.medicalFlags || [],\n    medicines: body.medicines || '',\n    emergencyContact: body.emergencyContact || '',\n    emergencyContactPhone: body.emergencyContactPhone || '',\n    message: body.message || '',\n    status: 'RECEIVED',\n    eta: '15 minutes'\n  }\n}];"
+      },
+      "id": "sos-process",
+      "name": "Process SOS",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [480, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $input.first().json.body;\nconst reportId = 'CMP-' + Math.floor(Math.random() * 900 + 100);\nconst timestamp = new Date().toISOString();\n\nreturn [{\n  json: {\n    reportId,\n    timestamp,\n    issueType: body.issueType || 'drain',\n    severity: body.severity || 'Medium',\n    location: body.location || '',\n    description: body.description || '',\n    ward: body.ward || '',\n    reportedBy: body.name || 'Citizen',\n    phone: body.phone || '',\n    status: 'REGISTERED',\n    assignedTo: 'Ward Engineer',\n    eta: '2 hours'\n  }\n}];"
+      },
+      "id": "report-process",
+      "name": "Process Report",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [480, 520]
+    },
+    {
+      "parameters": {
+        "url": "https://api.open-meteo.com/v1/forecast",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            { "name": "latitude", "value": "={{ $input.first().json.query.lat || '19.076' }}" },
+            { "name": "longitude", "value": "={{ $input.first().json.query.lng || '72.877' }}" },
+            { "name": "hourly", "value": "precipitation,rain,windspeed_10m" },
+            { "name": "daily", "value": "precipitation_sum,rain_sum,temperature_2m_max,temperature_2m_min,weathercode" },
+            { "name": "timezone", "value": "Asia/Kolkata" },
+            { "name": "forecast_days", "value": "7" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "weather-fetch",
+      "name": "Fetch Open-Meteo",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [480, 740]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ success: true, sosId: $input.first().json.sosId, status: $input.first().json.status, eta: $input.first().json.eta, timestamp: $input.first().json.timestamp, message: 'SOS received. Rescue team dispatched to Ward ' + $input.first().json.ward }) }}",
+        "options": { "responseCode": 200 }
+      },
+      "id": "sos-respond",
+      "name": "SOS Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [720, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ success: true, reportId: $input.first().json.reportId, status: $input.first().json.status, assignedTo: $input.first().json.assignedTo, eta: $input.first().json.eta, timestamp: $input.first().json.timestamp }) }}",
+        "options": { "responseCode": 200 }
+      },
+      "id": "report-respond",
+      "name": "Report Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [720, 520]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($input.first().json) }}",
+        "options": { "responseCode": 200 }
+      },
+      "id": "weather-respond",
+      "name": "Weather Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [720, 740]
+    }
+  ],
+  "connections": {
+    "SOS Webhook": { "main": [[{ "node": "Process SOS", "type": "main", "index": 0 }]] },
+    "Drain Report Webhook": { "main": [[{ "node": "Process Report", "type": "main", "index": 0 }]] },
+    "Weather Webhook": { "main": [[{ "node": "Fetch Open-Meteo", "type": "main", "index": 0 }]] },
+    "Process SOS": { "main": [[{ "node": "SOS Response", "type": "main", "index": 0 }]] },
+    "Process Report": { "main": [[{ "node": "Report Response", "type": "main", "index": 0 }]] },
+    "Fetch Open-Meteo": { "main": [[{ "node": "Weather Response", "type": "main", "index": 0 }]] }
+  },
+  "settings": { "executionOrder": "v1" },
+  "staticData": null,
+  "tags": ["jalpravah", "flood", "citizen"]
+}

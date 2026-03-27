@@ -12,7 +12,11 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.thegoogiprak.jalpravahcitizen",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -20,10 +24,23 @@
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
-      }
+      },
+      "package": "com.thegoogiprak.jalpravahcitizen"
     },
     "web": {
-      "favicon": "./assets/favicon.png"
+      "favicon": "./assets/favicon.png",
+      "bundler": "metro",
+      "output": "single",
+      "name": "JalPravah — Citizen Safety Platform",
+      "shortName": "JalPravah",
+      "description": "Real-time flood intelligence and emergency SOS for Mumbai citizens",
+      "themeColor": "#00C9A7",
+      "backgroundColor": "#1A1A2E"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "6a355512-5fe9-42c1-97e7-51e3482bbe3f"
+      }
     }
   }
 }
